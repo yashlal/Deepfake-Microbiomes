@@ -1,9 +1,0 @@
-CHECK
-1. Generating wrapped into a function
-
-TDL
-1. Work on automating input to excel file
-
-Q
-1. Does it generate every trial and each run only references the existing data?
-2. Understand the Cdiff_mice_high_vs_low_risk tsv data better (and which things are "not found")

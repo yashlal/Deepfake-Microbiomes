@@ -1,0 +1,5 @@
+TDL
+
+1. Change input to prob distributions
+2. Change output to data structures, not files
+3. Profile code?

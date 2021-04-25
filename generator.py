@@ -8,6 +8,12 @@ from predict_by_model import *
 import openpyxl
 import random as rd
 
+def genrand(p):
+    v = rd.random()
+    if v <= p:
+        return 1
+    else:
+        return 0
 
 def GetStrn(strg):
     s1 = strg.split(";")[-1]
@@ -27,49 +33,37 @@ def model_comm_eq(csv, _sep, dirhead, ObservationFile):
     for ind, exp in enumerate(Experiments):
 
         #setup
-        dirname = dirhead + str(ind+1)
-        try:
-            os.mkdir(dirname)
-        except:
-            pass
+        # dirname = dirhead + str(ind+1)
+        # try:
+        #     os.mkdir(dirname)
+        # except:
+        #     pass
 
         #algorithm generation stuff
         by_proportion = miceData[exp]/sum(miceData[exp])
         spec_list = list(species[by_proportion>0.001])
         by_proportion.index = species
-        Equilibrium,FoundList = predict_community(spec_list,File = ObservationFile,lambdaVersion = "Equilibrium", verb = True)
+        print(spec_list)
+        #Equilibrium,FoundList = predict_community(spec_list,File = ObservationFile,lambdaVersion = "Equilibrium", verb = True)
 
 
-        CommunityEquilibrium[exp] = dict([(ky,val.round(3)) for ky,val in Equilibrium.items()])
-        FoundLists[exp] = FoundList
-        observed_communities[exp] = by_proportion[np.unique(FoundList)][~by_proportion[np.unique(FoundList)].index.duplicated()]
+        # CommunityEquilibrium[exp] = dict([(ky,val.round(3)) for ky,val in Equilibrium.items()])
+        #
+        # fig,ax = plt.subplots(figsize = (10,10))
+        #
+        # keys = list(CommunityEquilibrium[exp].keys())
+        # # get values min the same order as keys, and parse percentage values
+        # vals = [float(CommunityEquilibrium[exp][k]) for k in keys]
+        # sb.barplot(x=keys, y=vals, ax = ax)
+        # ax.set_xticklabels(keys, rotation = 90)
+        # fig.savefig(dirname + "/commeq.png")
+        #
+        # data_dict = {}
+        # for i in range(len(keys)):
+        #     data_dict[keys[i]] = vals[i]
+        # d = pd.DataFrame(list(data_dict.items()))
+        # d.to_excel(dirname + "/eq" + str(ind+1)+ ".xlsx")
 
-        fig,ax = plt.subplots(figsize = (10,10))
-
-        keys = list(CommunityEquilibrium[exp].keys())
-        # get values min the same order as keys, and parse percentage values
-        vals = [float(CommunityEquilibrium[exp][k]) for k in keys]
-        sb.barplot(x=keys, y=vals, ax = ax)
-        ax.set_xticklabels(keys, rotation = 90)
-        fig.savefig(dirname + "/commeq.png")
-
-        fig,ax = plt.subplots(figsize = (10,10))
-
-        keys = list(observed_communities[exp].index)
-
-        # get values in the same order as keys, and parse percentage values
-        vals = [observed_communities[exp].loc[k] for k in keys]
-        data_dict = {}
-        for i in range(len(keys)):
-            data_dict[keys[i]] = vals[i]
-        d = pd.DataFrame(list(data_dict.items()))
-        d.to_excel(dirname + "/eq" + str(ind+1)+ ".xlsx")
-
-        # trial_data.to_csv(dirname + "/eq.csv")
-        sb.barplot(x=keys, y=vals, ax = ax)
-        ax.set_xticklabels(keys, rotation = 90)
-        fig.savefig(dirname + "/obscomm.png")
-        
 def edit_pairwise_data(file):
     wb = openpyxl.load_workbook(file)
     sheet = wb['Relative_Abundance']
@@ -82,5 +76,8 @@ def edit_pairwise_data(file):
                 sheet.cell(row=i,column=j).value = rd.random()
     wb.save('rand.xlsx')
 
-edit_pairwise_data('Pairwise_Chemostat.xlsx')
-model_comm_eq(csv="Cdiff_mice_high_vs_low_risk.species.tsv", _sep='\t', dirhead='T', ObservationFile =  "Pairwise_Chemostat.xlsx")
+#edit_pairwise_data('Pairwise_Chemostat.xlsx')
+#model_comm_eq(csv="Cdiff_mice_high_vs_low_risk.species.tsv", _sep='\t', dirhead='T', ObservationFile =  "rand.xlsx")
+
+
+for i in range(1,101)

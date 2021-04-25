@@ -43,10 +43,11 @@ def model_comm_eq(csv, _sep, dirhead, ObservationFile):
         by_proportion = miceData[exp]/sum(miceData[exp])
         spec_list = list(species[by_proportion>0.001])
         by_proportion.index = species
-        print(spec_list)
-        #Equilibrium,FoundList = predict_community(spec_list,File = ObservationFile,lambdaVersion = "Equilibrium", verb = True)
-
-
+    return spec_list
+        # #print(spec_list)
+        # Equilibrium,FoundList = predict_community(spec_list,File = ObservationFile,lambdaVersion = "Equilibrium", verb = True)
+        #
+        #
         # CommunityEquilibrium[exp] = dict([(ky,val.round(3)) for ky,val in Equilibrium.items()])
         #
         # fig,ax = plt.subplots(figsize = (10,10))
@@ -77,7 +78,30 @@ def edit_pairwise_data(file):
     wb.save('rand.xlsx')
 
 #edit_pairwise_data('Pairwise_Chemostat.xlsx')
-#model_comm_eq(csv="Cdiff_mice_high_vs_low_risk.species.tsv", _sep='\t', dirhead='T', ObservationFile =  "rand.xlsx")
+s = model_comm_eq(csv="Cdiff_mice_high_vs_low_risk.species.tsv", _sep='\t', dirhead='T', ObservationFile =  "rand.xlsx")
+print(s)
+prob_dict = {}
 
+for i in range(len(s)):
+    prob_dict[s[i]] = rd.random()
 
-for i in range(1,101)
+print(prob_dict)
+
+def generator(prob_dictionary, pairwise_file, n):
+    CommunityEquilibrium = {}
+    for i in range(0,n):
+        spec_list = []
+
+        for species in prob_dictionary:
+            bin = genrand(prob_dictionary[species])
+            if bin == 1:
+                spec_list.append(species)
+
+        Equilibrium, FoundList = predict_community(spec_list, File = pairwise_file, lambdaVersion = "Equilibrium", verb = True)
+
+        CommunityEquilibrium = dict([(ky,val.round(3)) for ky,val in Equilibrium.items()])
+
+        d = pd.DataFrame(list(CommunityEquilibrium.items()))
+        d.to_excel("new.xlsx")
+        
+generator(prob_dict, 'Pairwise_Chemostat.xlsx', 1)

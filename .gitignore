@@ -1,2 +1,3 @@
 *.txt
 playground.py
+/__pycache__

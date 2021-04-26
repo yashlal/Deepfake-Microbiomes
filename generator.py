@@ -20,47 +20,53 @@ def GetStrn(strg):
     s2 = "_".join(s1.split("__")[1:])
     return s2
 
+def get_all_species(csv, _sep):
+
+    miceData = pd.read_csv(csv, sep=_sep)
+    species = miceData.species.apply(GetStrn)
+    species = list(species)
+    species = species[:-1]
+    #remove blank element
+    return species
+
+#generate a random excel for testing
 def edit_pairwise_data(file):
     wb = openpyxl.load_workbook(file)
     sheet = wb['Relative_Abundance']
 
     for i in range(2, sheet.max_row+1):
         for j in range(2, sheet.max_column+1):
+            print(i)
             if i==j:
                 sheet.cell(row=i,column=j).value = 1
             else:
                 sheet.cell(row=i,column=j).value = rd.random()
     wb.save('rand.xlsx')
 
-def distro_setup(csv, _sep):
 
-    miceData = pd.read_csv(csv, sep=_sep)
-    init_prob_distro = {}
-
-    miceData = pd.read_csv(csv, sep=_sep)
-    all_species = list(miceData.species.apply(GetStrn))
-
-    for i in range(len(all_species)):
-        init_prob_distro[all_species[i]] = rd.random()
-    return init_prob_distro
+def make_prob_distro(species_list):
+    prob_dict = {}
+    for i in range(len(species_list)):
+        prob_dict[species_list[i]] = rd.random()
+    return prob_dict
 
 def generator(prob_dictionary, pairwise_file, n):
     CommunityEquilibrium = {}
     for i in range(0,n):
-        trial_spec_list = []
+        print("Trial " + str(i+1) + " in progress...")
+        spec_list = []
 
         for species in prob_dictionary:
             bin = genrand(prob_dictionary[species])
             if bin == 1:
-                trial_spec_list.append(species)
+                spec_list.append(species)
 
-        print(trial_spec_list)
-        Equilibrium, FoundList = predict_community(trial_spec_list, File = pairwise_file, lambdaVersion = "Equilibrium", verb = True)
+        Equilibrium, FoundList = predict_community(spec_list, File = pairwise_file, lambdaVersion = "Equilibrium", verb = True)
 
-        CommunityEquilibrium = dict([(ky,val.round(3)) for ky,val in Equilibrium.items()])
+        CommunityEquilibrium[i] = dict([(ky,val.round(3)) for ky,val in Equilibrium.items()])
+    return CommunityEquilibrium
 
-        d = pd.DataFrame(list(CommunityEquilibrium.items()))
-        d.to_excel("new.xlsx")
-
-distro = distro_setup("Cdiff_mice_high_vs_low_risk.species.tsv", _sep='\t')
-generator(distro, 'Pairwise_Chemostat.xlsx', 1)
+s = get_all_species(csv="Cdiff_mice_high_vs_low_risk.species.tsv", _sep='\t')
+true_prob_distro = make_prob_distro(s)
+CU = generator(true_prob_distro, 'rand.xlsx', 10)
+print(CU)

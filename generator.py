@@ -76,5 +76,5 @@ def update_pw(file, unfound):
 
 s = get_all_species(csv="Cdiff_mice_high_vs_low_risk.species.tsv", _sep='\t')
 true_prob_distro = make_prob_distro(s)
-CU, FL = generator(true_prob_distro, 'rand.xlsx', 1)
+CU, FL = generator(true_prob_distro, 'updated.xlsx', 1)
 print(CU)

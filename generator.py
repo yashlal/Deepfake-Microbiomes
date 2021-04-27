@@ -43,11 +43,10 @@ def edit_pairwise_data(file):
                 sheet.cell(row=i,column=j).value = rd.random()
     wb.save('rand.xlsx')
 
-
 def make_prob_distro(species_list):
     prob_dict = {}
     for i in range(len(species_list)):
-        prob_dict[species_list[i]] = rd.random()
+        prob_dict[species_list[i]] = 1
     return prob_dict
 
 def generator(prob_dictionary, pairwise_file, n):
@@ -63,10 +62,19 @@ def generator(prob_dictionary, pairwise_file, n):
 
         Equilibrium, FoundList = predict_community(spec_list, File = pairwise_file, lambdaVersion = "Equilibrium", verb = True)
 
-        CommunityEquilibrium[i] = dict([(ky,val.round(3)) for ky,val in Equilibrium.items()])
-    return CommunityEquilibrium
+        CommunityEquilibrium[i+1] = dict([(ky,val.round(3)) for ky,val in Equilibrium.items()])
+    return CommunityEquilibrium, FoundList
+
+def update_pw(file, unfound):
+    wb = openpyxl.load_workbook(file)
+    sh = wb['Relative_Abundance']
+    mr, mc = sh.max_row, sh.max_column
+    for i in range(len(unfound)):
+        sh.cell(row=mr+i+1, column=1).value = unfound[i]
+        sh.cell(row=1, column = mc+i+1).value = unfound[i]
+    wb.save('updated.xlsx')
 
 s = get_all_species(csv="Cdiff_mice_high_vs_low_risk.species.tsv", _sep='\t')
 true_prob_distro = make_prob_distro(s)
-CU = generator(true_prob_distro, 'rand.xlsx', 10)
+CU, FL = generator(true_prob_distro, 'rand.xlsx', 1)
 print(CU)

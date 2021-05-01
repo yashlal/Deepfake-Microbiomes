@@ -10,6 +10,22 @@ def genrand(p):
     else:
         return 0
 
+def generate_matrix(excel, sheetname, output_file_name):
+    df = pd.read_excel(excel, sheet_name=sheetname, index_col=0)
+    labels = df.index.to_list()
+    ar = df.to_numpy()
+    i = 0
+    while i <= (len(ar)-1):
+        for j in range(i+1):
+            if i == j:
+                ar[i][j] = 1
+            else:
+                r = rd.random()
+                ar[i][j] = r
+                ar[j][i] = 1-r
+        i += 1
+    df.to_excel(output_file_name)
+
 def generator_fxn(workbook, sheetname, n, pairwise_file):
     print('Reading excel...')
     df = pd.read_excel(workbook, sheet_name = sheetname, index_col = 0)

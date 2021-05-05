@@ -16,9 +16,7 @@ ar_CT = CT.to_numpy()
 specs_in_matrix = list(old_ar[0][1:])
 specs_in_CT = ar_CT[:,0]
 
-# print(specs_in_matrix)
-# print("_______________________________________________________________________________________________________________________")
-# print(specs_in_CT)
+
 X = []
 str_y = []
 
@@ -28,16 +26,18 @@ for s in specs_in_CT:
     str_y.append(ar_CT[ind][14])
 
 y = [1 if x=='CRC' else 0 for x in str_y]
-X_train, X_test, y_train, y_test = sklearn.model_selection.train_test_split(X, y, random_state=1)
+X_train, X_test, y_train, y_test = sklearn.model_selection.train_test_split(X, y, random_state=42)
 # running Auto-PyTorch
-autoPyTorch = AutoNetClassification("medium_cs",  # config preset
+autoPyTorch = AutoNetClassification("full_cs",  # config preset
                                     log_level='info',
-                                    max_runtime=1200,
-                                    min_budget=50,
-                                    max_budget=150)
+                                    max_runtime=252000)
 
 autoPyTorch.fit(X_train, y_train, validation_split=0.3)
 y_pred = autoPyTorch.predict(X_test)
 
-print('Prediction', y_pred)
 print("Accuracy score", sklearn.metrics.accuracy_score(y_test, y_pred))
+# autonet = AutoNetClassification("full_cs", budget_type='epochs', min_budget=1, max_budget=9, num_iterations=1, log_level='debug', use_pynisher=False)
+# autonet.fit(X_train, y_train, validation_split=0.3)
+# y_pred = autonet.predict(X_test)
+
+# print("Accuracy score", sklearn.metrics.accuracy_score(y_test, y_pred))

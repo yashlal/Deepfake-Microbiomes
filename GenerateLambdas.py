@@ -14,7 +14,7 @@ def GenerateLambdasFromExcel(Experiment,File = "Pairwise_Chemostat.xlsx",version
     for CM in Community:
         if len(CM):
             try:
-                CommunityIndex += [RelativeAbundanceAll.index[np.where(RelativeAbundanceAll.index.str.find(CM)>0)][0]]
+                CommunityIndex += [RelativeAbundanceAll.index[np.where(RelativeAbundanceAll.index.str.find(CM)>=0)][0]]
                 foundList += [CM]
             except IndexError:
                 print(CM + " not found")

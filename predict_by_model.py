@@ -78,7 +78,7 @@ def predict_by_model(experiment,lambdaVersion = "Equilibrium",verb=False,generat
     # print(ExpDict["Invader"] + " Initial Invasion Rate: ",r0)
 
     t0 = 0
-    invasion = ode(odeSys).set_integrator('lsoda')
+    invasion = ode(odeSys).set_integrator('lsoda', min_step=10**-12)
     invasion.set_initial_value(z0,t0).set_f_params([Theta,newLambda])
     t = [t0]
     dt = 0.1
@@ -159,7 +159,7 @@ def predict_justComm(LambdaMat,verb=False):
     z0 = np.ones(numComm)/numComm
     t0 = 0
 
-    community = ode(odeSys).set_integrator('lsoda')
+    community = ode(odeSys).set_integrator('lsoda', min_step=10**-12)
     community.set_initial_value(z0,t0).set_f_params([Theta,LambdaMat.values])
 
     t = [t0]

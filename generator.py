@@ -35,10 +35,12 @@ def generator_fxn(workbook, sheetname, n, pairwise_file):
     l = df.index.to_list()
     prob_dict = {}
     spec_list = []
+    CommunityEquilibrium = {}
+    EditedCommunityEquilibrium = {} #hold non-zero commeq values
 
     print('Making Probability Distribution...')
     for i in l:
-        prob_dict[i] = 1
+        prob_dict[i] = rd.random()
 
     for j in range(1,n+1):
 
@@ -50,8 +52,22 @@ def generator_fxn(workbook, sheetname, n, pairwise_file):
 
         Equilibrium, FoundList = predict_community(spec_list, File = pairwise_file, lambdaVersion = "Equilibrium", verb = True)
         CommunityEquilibrium[j] = dict([(ky,val.round(3)) for ky,val in Equilibrium.items()])
-    return CommunityEquilibrium
+
+        #new dict for non-zero values only
+        EditedCommunityEquilibrium[j] = {}
+        for k in CommunityEquilibrium[j]:
+            if CommunityEquilibrium[j][k] != 0:
+                EditedCommunityEquilibrium[j][k] = CommunityEquilibrium[j][k]
+        spec_list.clear()
+    return CommunityEquilibrium, EditedCommunityEquilibrium
 
 #Run the generator
 if __name__ == '__main__':
-    print(generator_fxn('NewPW.xlsx', 'Relative_Abundance', 1, 'NewPW.xlsx'))
+    CU, ECU = generator_fxn('NewPW.xlsx', 'Relative_Abundance', 100, 'NewPW.xlsx')
+    print(CU)
+    print("_____________________________________________________________________")
+    print(ECU)
+    df1 = pd.DataFrame(CU)
+    df2 = pd.DataFrame(ECU)
+    df1.to_excel('CU.xlsx')
+    df2.to_excel('ECU.xlsx')

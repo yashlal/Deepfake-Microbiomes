@@ -10,8 +10,10 @@ import sklearn.model_selection
 import sklearn.datasets
 import sklearn.metrics
 
-def gen_data_lists():
-    matrix = pd.read_excel('Trimmed.xlsx', sheet_name='Sheet1')
+#generates useable lists from the excel to feed into autoPyTorch
+#Trimmed291 has been trimmed only for species with at least 1 sample where they have 5% RA (sheet has only 291 parameters/rows)
+def gen_data_lists(datafile):
+    matrix = pd.read_excel(datafile, sheet_name='Sheet1')
     CT = pd.read_excel('ClassificationTable.xlsx', sheet_name='Supplementary Table S6', header=19)
     old_ar = matrix.to_numpy()
     new_ar = np.transpose(old_ar)
@@ -33,10 +35,10 @@ def gen_data_lists():
 
     return np.array(X),np.array(y)
 
-
+#Run APT's AutoNetClassification
 if __name__ == '__main__':
-    X_data,y_data = gen_data_lists()
-    X_train, X_test, y_train, y_test = sklearn.model_selection.train_test_split(X_data, y_data, train_size = 0.95, random_state=42)
+    X_data,y_data = gen_data_lists('Trimmed291.xlsx')
+    X_train, X_test, y_train, y_test = sklearn.model_selection.train_test_split(X_data, y_data, random_state=42)
 
     autoPyTorch = AutoNetClassification("full_cs", max_runtime=12000, min_budget=1200, max_budget=3600, log_level='info')
 

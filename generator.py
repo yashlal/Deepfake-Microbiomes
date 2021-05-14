@@ -45,6 +45,7 @@ def generator_fxn(workbook, sheetname, n, pairwise_file):
 
     for j in range(1,n+1):
 
+        #Loop through all the trials and each time generate species list
         print("Trial " + str(j) + " in progress...")
         for el in prob_dict:
             bin = genrand(prob_dict[el])
@@ -59,17 +60,14 @@ def generator_fxn(workbook, sheetname, n, pairwise_file):
         for k in CommunityEquilibrium[j]:
             if CommunityEquilibrium[j][k] != 0:
                 EditedCommunityEquilibrium[j][k] = CommunityEquilibrium[j][k]
+        #clear list for new trial/loop
         spec_list.clear()
     return CommunityEquilibrium, EditedCommunityEquilibrium, mega_spec_list
 
 #Run the generator
 if __name__ == '__main__':
-    CU, ECU, MSL = generator_fxn('NewPW.xlsx', 'Relative_Abundance', 10, 'NewPW.xlsx')
+    CU, ECU, MSL = generator_fxn('NewPW.xlsx', 'Relative_Abundance', 2, 'NewPW.xlsx')
     df1 = pd.DataFrame(CU)
     df2 = pd.DataFrame(ECU)
-    df1.to_excel('CU.xlsx')
-    df2.to_excel('ECU.xlsx')
-    for val in MSL:
-        print('_____________________________________________________________________________________________________________________________________')
-        print(MSL[val])
-        print('_____________________________________________________________________________________________________________________________________')
+    df1.to_excel('GeneratorOutput/CU.xlsx')
+    df2.to_excel('GeneratorOutput/ECU.xlsx')

@@ -78,7 +78,7 @@ def predict_by_model(experiment,lambdaVersion = "Equilibrium",verb=False,generat
     # print(ExpDict["Invader"] + " Initial Invasion Rate: ",r0)
 
     t0 = 0
-    invasion = ode(odeSys).set_integrator('lsoda', min_step=10**-12)
+    invasion = ode(odeSys).set_integrator('lsoda')
     invasion.set_initial_value(z0,t0).set_f_params([Theta,newLambda])
     t = [t0]
     dt = 0.1
@@ -159,7 +159,7 @@ def predict_justComm(LambdaMat,verb=False):
     z0 = np.ones(numComm)/numComm
     t0 = 0
 
-    community = ode(odeSys).set_integrator('lsoda', min_step=10**-12)
+    community = ode(odeSys).set_integrator('lsoda')
     community.set_initial_value(z0,t0).set_f_params([Theta,LambdaMat.values])
 
     t = [t0]
@@ -184,7 +184,9 @@ def predict_justComm(LambdaMat,verb=False):
 
     if np.sum(list(CommunityEquilibrium.values())).round(3) != 1:
         print("###################################################################################")
-        print("Error: zi do not sum to 1",np.sum(zt[-1]))
+        print("Error: zi do not sum to 1", np.sum(list(CommunityEquilibrium.values())))
+        print(Z)
+        print(LambdaMat)
         print("###################################################################################")
     elif np.min(list(CommunityEquilibrium.values())).round(3) < 0:
         print("###################################################################################")

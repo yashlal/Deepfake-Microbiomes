@@ -35,6 +35,7 @@ def generator_fxn(workbook, sheetname, n, pairwise_file):
     l = df.index.to_list()
     prob_dict = {}
     spec_list = []
+    mega_spec_list = {}
     CommunityEquilibrium = {}
     EditedCommunityEquilibrium = {} #hold non-zero commeq values
 
@@ -49,7 +50,7 @@ def generator_fxn(workbook, sheetname, n, pairwise_file):
             bin = genrand(prob_dict[el])
             if bin == 1:
                 spec_list.append(el)
-
+        mega_spec_list[j] = spec_list.copy()
         Equilibrium, FoundList = predict_community(spec_list, File = pairwise_file, lambdaVersion = "Equilibrium", verb = True)
         CommunityEquilibrium[j] = dict([(ky,val.round(3)) for ky,val in Equilibrium.items()])
 
@@ -59,15 +60,16 @@ def generator_fxn(workbook, sheetname, n, pairwise_file):
             if CommunityEquilibrium[j][k] != 0:
                 EditedCommunityEquilibrium[j][k] = CommunityEquilibrium[j][k]
         spec_list.clear()
-    return CommunityEquilibrium, EditedCommunityEquilibrium
+    return CommunityEquilibrium, EditedCommunityEquilibrium, mega_spec_list
 
 #Run the generator
 if __name__ == '__main__':
-    CU, ECU = generator_fxn('NewPW.xlsx', 'Relative_Abundance', 100, 'NewPW.xlsx')
-    print(CU)
-    print("_____________________________________________________________________")
-    print(ECU)
+    CU, ECU, MSL = generator_fxn('NewPW.xlsx', 'Relative_Abundance', 10, 'NewPW.xlsx')
     df1 = pd.DataFrame(CU)
     df2 = pd.DataFrame(ECU)
     df1.to_excel('CU.xlsx')
     df2.to_excel('ECU.xlsx')
+    for val in MSL:
+        print('_____________________________________________________________________________________________________________________________________')
+        print(MSL[val])
+        print('_____________________________________________________________________________________________________________________________________')

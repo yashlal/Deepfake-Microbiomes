@@ -185,8 +185,9 @@ def predict_justComm(LambdaMat,verb=False):
     if np.sum(list(CommunityEquilibrium.values())).round(3) != 1:
         print("###################################################################################")
         print("Error: zi do not sum to 1", np.sum(list(CommunityEquilibrium.values())))
-        print(Z)
-        print(LambdaMat)
+        df_temp = pd.DataFrame(Z)
+        LambdaMat.to_excel('LM.xlsx')
+        df_temp.to_excel('Z.xlsx')
         print("###################################################################################")
     elif np.min(list(CommunityEquilibrium.values())).round(3) < 0:
         print("###################################################################################")

@@ -9,6 +9,12 @@ from autoPyTorch import HyperparameterSearchSpaceUpdates
 import sklearn.model_selection
 import sklearn.datasets
 import sklearn.metrics
+from sklearn.decomposition import TruncatedSVD
+from sklearn.feature_selection import RFE, chi2
+from sklearn.svm import LinearSVC
+from sklearn.datasets import load_iris
+from sklearn.feature_selection import SelectFromModel
+from sklearn.ensemble import RandomForestClassifier
 
 #generates useable lists from the excel to feed into autoPyTorch
 #Trimmed291 has been trimmed only for species with at least 1 sample where they have 5% RA (sheet has only 291 parameters/rows)
@@ -37,11 +43,26 @@ def gen_data_lists(datafile):
 
 #Run APT's AutoNetClassification
 if __name__ == '__main__':
-    X_data,y_data = gen_data_lists('Trimmed291.xlsx')
-    X_train, X_test, y_train, y_test = sklearn.model_selection.train_test_split(X_data, y_data, random_state=42)
+    X, y = gen_data_lists('Matrix.xlsx')
+    print(X.shape)
 
-    autoPyTorch = AutoNetClassification("full_cs", max_runtime=12000, min_budget=1200, max_budget=3600, log_level='info')
+    # lsvc = LinearSVC(C=10, penalty="l1", dual=False).fit(X, y)
+    # model = SelectFromModel(lsvc, prefit=True)
+    # X_new = model.transform(X)
+    # X_tens = torch.from_numpy(X_new)
+    # print(X_new.shape)
+    # print(X_tens.size())
 
-    autoPyTorch.fit(X_train, y_train, validation_split=0.1)
-    y_pred = autoPyTorch.predict(X_test)
-    print("Accuracy score", sklearn.metrics.accuracy_score(y_test, y_pred))
+    # X_train, X_test, y_train, y_test = sklearn.model_selection.train_test_split(X_new, y, train_size = 0.95, random_state=42)
+    # clf = RandomForestClassifier(random_state=0)
+    # clf.fit(X_train, y_train)
+    # y_pred = clf.predict(X_test)
+
+    # autoPyTorch = AutoNetClassification("full_cs", max_runtime=300, min_budget=30, max_budget=90, log_level='info')
+    # autoPyTorch.fit(X_train, y_train, validation_split=0.3)
+    #
+    # y_pred = autoPyTorch.predict(X_test)
+    # print("Accuracy Score", sklearn.metrics.accuracy_score(y_test, y_pred))
+    # pytorch_model = autoPyTorch.get_pytorch_model()
+    # print(pytorch_model)
+    # pytorch_model(X_tens)

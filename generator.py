@@ -12,7 +12,7 @@ def genrand(p):
         return 0
 
 # Generates a random interaction matrix with 1s along the diagonal and a_ij = 1-a_ji property
-def generate_matrix(excel, sheetname, output_file_name):
+def generate_matrix(excel, sheetname, output_file_name, tolerance):
     df = pd.read_excel(excel, sheet_name=sheetname, index_col=0)
     labels = df.index.to_list()
     ar = df.to_numpy()
@@ -23,8 +23,16 @@ def generate_matrix(excel, sheetname, output_file_name):
                 ar[i][j] = 1
             else:
                 r = rd.random()
-                ar[i][j] = r
-                ar[j][i] = 1-r
+                #first two clauses force near zero to zero and near 1 to 1 preventing extraordinarily large lambdas and stiff ODEs
+                if r<=tolerance:
+                    ar[i][j] = 0
+                    ar[j][i] = 1
+                elif r>=(1-tolerance):
+                    ar[i][j] = 1
+                    ar[j][i] = 0
+                else:
+                    ar[i][j] = r
+                    ar[j][i] = 1-r
         i += 1
     df.to_excel(output_file_name)
 
@@ -66,8 +74,9 @@ def generator_fxn(workbook, sheetname, n, pairwise_file):
 
 #Run the generator
 if __name__ == '__main__':
-    CU, ECU, MSL = generator_fxn('NewPW.xlsx', 'Relative_Abundance', 2, 'NewPW.xlsx')
+    CU, ECU, MSL = generator_fxn('PWMatrix.xlsx', 'Relative_Abundance', 100, 'PWMatrix.xlsx')
     df1 = pd.DataFrame(CU)
     df2 = pd.DataFrame(ECU)
     df1.to_excel('GeneratorOutput/CU.xlsx')
     df2.to_excel('GeneratorOutput/ECU.xlsx')
+    # generate_matrix('PWMatrix.xlsx', 'Relative_Abundance', 'PWMatrix.xlsx', 0.01)

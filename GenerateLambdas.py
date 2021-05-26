@@ -22,7 +22,7 @@ def GenerateLambdasFromExcel(Experiment,File = "Pairwise_Chemostat.xlsx",version
 
     if Invader != None:
         try:
-            InvaderIndex = RelativeAbundanceAll.index[np.where(RelativeAbundanceAll.index.str.find(Invader)>0)][0]
+            InvaderIndex = RelativeAbundanceAll.index[np.where(RelativeAbundanceAll.index.str.find(Invader)>=0)][0]
         except IndexError:
             print("Invader Not Found")
             return None

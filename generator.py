@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from predict_by_model import *
 import random as rd
+import cProfile
 
 # Generates a random value in a Bernoulli style, used to determine whether or not a species will be included in the list
 def genrand(p):
@@ -43,7 +44,6 @@ def generator_fxn(workbook, sheetname, n, pairwise_file):
     l = df.index.to_list()
     prob_dict = {}
     spec_list = []
-    mega_spec_list = {}
     CommunityEquilibrium = {}
     EditedCommunityEquilibrium = {} #hold non-zero commeq values
 
@@ -59,7 +59,6 @@ def generator_fxn(workbook, sheetname, n, pairwise_file):
             bin = genrand(prob_dict[el])
             if bin == 1:
                 spec_list.append(el)
-        mega_spec_list[j] = spec_list.copy()
         Equilibrium, FoundList = predict_community(spec_list, File = pairwise_file, lambdaVersion = "Equilibrium", verb = True)
         CommunityEquilibrium[j] = dict([(ky,val.round(3)) for ky,val in Equilibrium.items()])
 
@@ -73,8 +72,8 @@ def generator_fxn(workbook, sheetname, n, pairwise_file):
     return CommunityEquilibrium, EditedCommunityEquilibrium, mega_spec_list
 
 #Run the generator
-if __name__ == '__main__':
-    CU, ECU, MSL = generator_fxn('PWMatrix.xlsx', 'Relative_Abundance', 100, 'PWMatrix.xlsx')
+def main(n):
+    CU, ECU, MSL = generator_fxn('PWMatrix.xlsx', 'Relative_Abundance', n, 'PWMatrix.xlsx')
     df1 = pd.DataFrame(CU)
     df2 = pd.DataFrame(ECU)
     df1.to_excel('GeneratorOutput/CU.xlsx')

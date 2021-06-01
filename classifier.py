@@ -21,54 +21,38 @@ from sklearn.ensemble import RandomForestClassifier
 def gen_data_lists(datafile):
     df1=pd.read_excel(datafile, sheet_name="Sheet1")
     np1=list(df1.to_numpy())
-    df2=pd.read_excel("YData.xlsx", sheet_name="Sheet1")
-    np2=list(df2.to_numpy())
+    # df2=pd.read_excel("YData.xlsx", sheet_name="Sheet1")
+    # np2=list(df2.to_numpy())
     X = [list(i[1:]) for i in np1]
-    y = [int(j[1]) for j in np2]
-    return np.array(X), np.array(y)
+    # y = [int(j[1]) for j in np2]
+    return np.array(X)
 
-#Run APT's AutoNetClassification
-if __name__ == '__main__':
-    # c=0.2
-    X_data, y_data = gen_data_lists('XData.xlsx')
-    print(X_data.shape)
-    # while c<=20.1:
-    #     lsvc = LinearSVC(C=c, penalty="l1", dual=False, max_iter=10000).fit(X_data, y_data)
-    #     model = SelectFromModel(lsvc, prefit=True)
-    #     X_new = model.transform(X_data)
-    #     print(X_new.shape)
-    #
-    #     X_train, X_test, y_train, y_test = sklearn.model_selection.train_test_split(X_new, y_data, random_state=42)
-    #
-    #     clf = RandomForestClassifier(random_state=0)
-    #     clf.fit(X_train, y_train)
-    #     y_pred = clf.predict(X_test)
-    #     # print('C value is', c)
-    #     print("Accuracy Score", sklearn.metrics.accuracy_score(y_test, y_pred))
-    #     print("C value is", c)
-    #     c += 0.1
+#Build discriminator
+#X1xlsx is the excel wkbk with the real samples
+#X2xlsx is the excek ekbk with the fake samples
+#LSVC enabled controls whether or not LSVC is added and c is the value for LSVC
+def discriminator(X1xlsx, X2xlsx, lsvc_enabled=False, c=3.3, train_size=0.75):
+    X1_df = pd.read_excel(X1xlsx, index_col=0)
+    X1 = X1_df.to_numpy()
+    y1 = np.ones(X1.shape[0])
+    X2 = gen_data_lists(X2xlsx)
+    y2 = np.zeros(X2.shape[0])
+    X = np.concatenate((X1,X2), axis=0)
+    y = np.concatenate((y1,y2))
 
-    # autoPyTorch = AutoNetClassification("full_cs", max_runtime=12000, min_budget=1200, max_budget=3600, log_level='info')
-    # autoPyTorch.fit(X_train, y_train, validation_split=0.3)
-    # y_pred = autoPyTorch.predict(X_test)
-    # print("Accuracy Score", sklearn.metrics.accuracy_score(y_test, y_pred))
-    # pytorch_model = autoPyTorch.get_pytorch_model()
-    # print(pytorch_model)
-    # pytorch_model(X_tens)
+    if lsvc_enabled:
+        lsvc = LinearSVC(C=c, penalty="l1", dual=False, max_iter=10000).fit(X, y)
+        model = SelectFromModel(lsvc, prefit=True)
+        X_new = model.transform(X)
+        print(X_new.shape)
 
-    lsvc = LinearSVC(C=3.3, penalty="l1", dual=False, max_iter=10000).fit(X_data, y_data)
-    model = SelectFromModel(lsvc, prefit=True)
-    X_new = model.transform(X_data)
-    print(X_new.shape)
+        X_train, X_test, y_train, y_test = sklearn.model_selection.train_test_split(X_new, y, train_size=train_size, random_state=42)
 
-    X_train, X_test, y_train, y_test = sklearn.model_selection.train_test_split(X_new, y_data, train_size=0.95, random_state=42)
+
+    else:
+        X_train, X_test, y_train, y_test = sklearn.model_selection.train_test_split(X, y, train_size=train_size, random_state=42)
 
     clf = RandomForestClassifier(random_state=0)
     clf.fit(X_train, y_train)
     y_pred = clf.predict(X_test)
-    train_pred = clf.predict(X_train)
-    full_pred = clf.predict(X_new)
-    # print('C value is', c)
     print("Test Accuracy Score", sklearn.metrics.accuracy_score(y_test, y_pred))
-    print("Train Accuracy Score", sklearn.metrics.accuracy_score(y_train, train_pred))
-    print("All Data Accuracy Score", sklearn.metrics.accuracy_score(y_data, full_pred))

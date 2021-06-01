@@ -42,6 +42,8 @@ def generator_fxn(workbook, sheetname, n, pairwise_file):
     print('Reading excel...')
     df = pd.read_excel(workbook, sheet_name = sheetname, index_col = 0)
     l = df.index.to_list()
+    #correct ordering for CU
+    ordering = df.columns.to_list()
     prob_dict = {}
     spec_list = []
     CommunityEquilibrium = {}
@@ -52,30 +54,34 @@ def generator_fxn(workbook, sheetname, n, pairwise_file):
         prob_dict[i] = rd.random()
 
     for j in range(1,n+1):
-
+        CommunityEquilibrium[j] = {}
         #Loop through all the trials and each time generate species list
         print("Trial " + str(j) + " in progress...")
         for el in prob_dict:
             bin = genrand(prob_dict[el])
             if bin == 1:
                 spec_list.append(el)
+            # Make sure data has same dimension as real samples (sets RA of non-present species to zero)
+            elif bin == 0:
+                CommunityEquilibrium[j][el] = 0
         Equilibrium, FoundList = predict_community(spec_list, File = pairwise_file, lambdaVersion = "Equilibrium", verb = True)
-        CommunityEquilibrium[j] = dict([(ky,val.round(3)) for ky,val in Equilibrium.items()])
-
-        #new dict for non-zero values only
-        EditedCommunityEquilibrium[j] = {}
-        for k in CommunityEquilibrium[j]:
-            if CommunityEquilibrium[j][k] != 0:
-                EditedCommunityEquilibrium[j][k] = CommunityEquilibrium[j][k]
+        # For loop because we have to append the values to prevent overwriting preset zeros from bin == 0 condition
+        for ky,val in Equilibrium.items():
+            CommunityEquilibrium[j][ky] = val.round(3)
         #clear list for new trial/loop
         spec_list.clear()
-    return CommunityEquilibrium, EditedCommunityEquilibrium, mega_spec_list
+
+    df_output = pd.DataFrame(CommunityEquilibrium)
+    df_output = df_output.transpose()
+    df_output = df_output[ordering]
+    return df_output
+    # Order data in same order as real samples
 
 #Run the generator
-def main(n):
-    CU, ECU, MSL = generator_fxn('PWMatrix.xlsx', 'Relative_Abundance', n, 'PWMatrix.xlsx')
-    df1 = pd.DataFrame(CU)
-    df2 = pd.DataFrame(ECU)
-    df1.to_excel('GeneratorOutput/CU.xlsx')
-    df2.to_excel('GeneratorOutput/ECU.xlsx')
-    # generate_matrix('PWMatrix.xlsx', 'Relative_Abundance', 'PWMatrix.xlsx', 0.01)
+def main(n=100):
+    CU = generator_fxn('PWMatrix.xlsx', 'Relative_Abundance', n, 'PWMatrix.xlsx')
+    CU.to_excel('GeneratorOutput/CU.xlsx')
+    # generate_matrix('PWMatrix.xlsx', 'Relative_Abundance', 'PWMatrix.xlsx', 0.02)
+
+if __name__=='__main__':
+    main(100)

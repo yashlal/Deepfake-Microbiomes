@@ -47,8 +47,8 @@ def generator_fxn(workbook, sheetname, n, pairwise_file):
     prob_dict = {}
     spec_list = []
     CommunityEquilibrium = {}
-    EditedCommunityEquilibrium = {} #hold non-zero commeq values
-
+    print('Generating All Lambdas...')
+    Complete_Lambdas = GenerateLambdasFromRADF(RA_df = df)
     print('Making Probability Distribution...')
     for i in l:
         prob_dict[i] = rd.random()
@@ -64,18 +64,20 @@ def generator_fxn(workbook, sheetname, n, pairwise_file):
             # Make sure data has same dimension as real samples (sets RA of non-present species to zero)
             elif bin == 0:
                 CommunityEquilibrium[j][el] = 0
-        Equilibrium, FoundList = predict_community(spec_list, File = pairwise_file, lambdaVersion = "Equilibrium", verb = True)
+
+        Equilibrium = predict_community(FullLambdaMat=Complete_Lambdas, comm=spec_list, verb=True)
         # For loop because we have to append the values to prevent overwriting preset zeros from bin == 0 condition
         for ky,val in Equilibrium.items():
             CommunityEquilibrium[j][ky] = val.round(3)
         #clear list for new trial/loop
         spec_list.clear()
 
+    # Order data in same order as real samples
     df_output = pd.DataFrame(CommunityEquilibrium)
     df_output = df_output.transpose()
     df_output = df_output[ordering]
     return df_output
-    # Order data in same order as real samples
+
 
 #Run the generator
 def main(n=100):

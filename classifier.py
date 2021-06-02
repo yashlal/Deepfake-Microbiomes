@@ -1,20 +1,16 @@
 import pandas as pd
 import numpy as np
-import torch
-from torch import nn
-from autoPyTorch import AutoNetClassification
-from autoPyTorch import HyperparameterSearchSpaceUpdates
 from generator import *
 # data and metric imports
 import sklearn.model_selection
 import sklearn.datasets
 import sklearn.metrics
-from sklearn.decomposition import TruncatedSVD
-from sklearn.feature_selection import RFE, chi2
-from sklearn.svm import LinearSVC
-from sklearn.datasets import load_iris
 from sklearn.feature_selection import SelectFromModel
 from sklearn.ensemble import RandomForestClassifier
+from skbio.stats.distance import permanova
+from scipy.spatial import distance
+from skbio import DistanceMatrix
+import matplotlib.pyplot as plt
 
 #generates useable lists from the excel to feed into autoPyTorch
 #Trimmed291 has been trimmed only for species with at least 1 sample where they have 5% RA (sheet has only 291 parameters/rows)
@@ -30,8 +26,8 @@ def gen_data_lists(datafile):
 #Build discriminator
 #X1xlsx is the excel wkbk with the real samples
 #X2xlsx is the excek ekbk with the fake samples
-#LSVC enabled controls whether or not LSVC is added and c is the value for LSVC
-def discriminator(X1xlsx, X2xlsx, lsvc_enabled=False, c=3.3, train_size=0.75):
+#Uses Jensen Shannon Distance Metric with a PERMANOVA test
+def discriminator(X1xlsx, X2xlsx):
     X1_df = pd.read_excel(X1xlsx, index_col=0)
     X1 = X1_df.to_numpy()
     y1 = np.ones(X1.shape[0])
@@ -40,19 +36,12 @@ def discriminator(X1xlsx, X2xlsx, lsvc_enabled=False, c=3.3, train_size=0.75):
     X = np.concatenate((X1,X2), axis=0)
     y = np.concatenate((y1,y2))
 
-    if lsvc_enabled:
-        lsvc = LinearSVC(C=c, penalty="l1", dual=False, max_iter=10000).fit(X, y)
-        model = SelectFromModel(lsvc, prefit=True)
-        X_new = model.transform(X)
-        print(X_new.shape)
 
-        X_train, X_test, y_train, y_test = sklearn.model_selection.train_test_split(X_new, y, train_size=train_size, random_state=42)
+    dm = np.zeros((X.shape[0],X.shape[0]))
 
-
-    else:
-        X_train, X_test, y_train, y_test = sklearn.model_selection.train_test_split(X, y, train_size=train_size, random_state=42)
-
-    clf = RandomForestClassifier(random_state=0)
-    clf.fit(X_train, y_train)
-    y_pred = clf.predict(X_test)
-    print("Test Accuracy Score", sklearn.metrics.accuracy_score(y_test, y_pred))
+    for i in range(X.shape[0]):
+        for j in range(i+1):
+            dm[i][j] = dm[j][i] = distance.jensenshannon(X[i], X[j])
+    dm_from_np = DistanceMatrix(dm)
+    results = permanova(dm_from_np, y)
+    return results

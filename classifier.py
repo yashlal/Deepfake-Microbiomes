@@ -43,5 +43,5 @@ def discriminator(X1xlsx, X2xlsx):
         for j in range(i+1):
             dm[i][j] = dm[j][i] = distance.jensenshannon(X[i], X[j])
     dm_from_np = DistanceMatrix(dm)
-    results = permanova(dm_from_np, y)
+    results = permanova(dm_from_np, y, permutations=10000)
     return results

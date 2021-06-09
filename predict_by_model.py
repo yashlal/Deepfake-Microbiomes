@@ -58,7 +58,7 @@ def predict_community(FullLambdaMat, comm, verb=False):
     z0 = np.ones(numComm)/numComm
     t0 = 0
 
-    community = ode(odeSys).set_integrator('lsoda')
+    community = ode(odeSys).set_integrator('vode')
     community.set_initial_value(z0,t0).set_f_params([Theta,LambdaMat.values])
 
     t = [t0]
@@ -83,6 +83,7 @@ def predict_community(FullLambdaMat, comm, verb=False):
     if np.sum(list(CommunityEquilibrium.values())).round(3) != 1:
         print("###################################################################################")
         print("Error: zi do not sum to 1", np.sum(list(CommunityEquilibrium.values())))
+        CommunityEquilibrium = {}
         print("###################################################################################")
     elif np.min(list(CommunityEquilibrium.values())).round(3) < 0:
         print("###################################################################################")

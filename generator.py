@@ -3,6 +3,8 @@ import numpy as np
 from predict_by_model import *
 import random as rd
 import cProfile
+from torch import nn, optim
+import torch.nn.functional as F
 
 # Generates a random value in a Bernoulli style, used to determine whether or not a species will be included in the list
 def genrand(p):
@@ -80,10 +82,9 @@ def generator_fxn(workbook, sheetname, n, pairwise_file):
 
 
 #Run the generator
-def main(n=100):
+def main(n=500):
     CU = generator_fxn('PWMatrix.xlsx', 'Relative_Abundance', n, 'PWMatrix.xlsx')
     CU.to_excel('GeneratorOutput/CU.xlsx')
-    # generate_matrix('PWMatrix.xlsx', 'Relative_Abundance', 'PWMatrix.xlsx', 0.02)
+    # generate_matrix('PWMatrix.xlsx', 'Relative_Abundance', 'PWMatrix.xlsx', 0)
 
-if __name__=='__main__':
-    main(100)
+main()

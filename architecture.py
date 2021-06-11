@@ -10,14 +10,12 @@ import torch.nn.functional as F
 import torch
 from torch.autograd import Variable
 
-
 def get_LT(df):
     LT_ar = []
     for i in range(df.shape[0]):
         for j in range(i):
             LT_ar.append(df.iloc[i,j])
     return LT_ar
-
 def regenerate_PWMatrix(LT_arr, dim):
     output_ar =[]
 

@@ -89,7 +89,7 @@ def generator_fxn(workbook, sheetname, n, pairwise_file):
 def main(n=500):
     # CU = generator_fxn('PWMatrix.xlsx', 'Relative_Abundance', n, 'PWMatrix.xlsx')
     # CU.to_excel('GeneratorOutput/CU.xlsx')
-    generate_matrix('Sample1.xlsx', 'Sheet1', 'Sample1.xlsx', 0)
+    generate_matrix('Sample1.xlsx', 'Sheet1', 'Sample1.xlsx', 0.03)
 
 if __name__=="__main__":
     main()

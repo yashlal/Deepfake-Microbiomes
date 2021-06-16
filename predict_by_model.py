@@ -3,9 +3,6 @@ from scipy.integrate import ode
 import matplotlib.pyplot as plt
 import json
 from GenerateLambdas import *
-import autograd
-from autograd.builtins import tuple
-import autograd.numpy as np
 from scipy.integrate import odeint
 import matplotlib.pyplot as plt
 
@@ -47,8 +44,8 @@ def predict_community(FullLambdaMat, comm, verb=False, vectorize=False):
         t += [community.t]
         centered_differences = (Z[-1]-Z[-3])/(3*dt)
         deriv_estimate = np.sqrt(np.dot(centered_differences,centered_differences))
-
-
+    print(t[-1])
+    print(deriv_estimate)
     Z =  np.array(Z[2:])
     CommunityEquilibrium = dict([(LambdaMat.index[i],Z[-1][i]) for i in range(numComm)])
 
@@ -56,7 +53,7 @@ def predict_community(FullLambdaMat, comm, verb=False, vectorize=False):
         print("Error: zi do not sum to 1", np.sum(list(CommunityEquilibrium.values())))
         CommunityEquilibrium = {}
 
-    #Rounding prevents small negative numbers like -8e-83
+    #Rounding prevents small negative numbers like -8e-83 (they screw up the JS distance and make it inf)
     if vectorize:
         return [x.round(5) for x in list(CommunityEquilibrium.values())]
     else:

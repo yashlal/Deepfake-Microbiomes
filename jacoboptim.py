@@ -8,9 +8,8 @@ import autograd
 from autograd.builtins import tuple
 from scipy.integrate import odeint as BlackBox
 import matplotlib.pyplot as plt
-from architecture import get_LT, regenerate_PWMatrix
+from modules import *
 from scipy.spatial import distance
-from modules import JSD
 from datetime import datetime
 
 dim1 = 280

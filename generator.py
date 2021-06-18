@@ -18,7 +18,6 @@ def genrand(p):
 #df_flag returns df instead of excel
 def generate_matrix(excel, sheetname, output_file_name, tolerance, df_flag=False):
     df = pd.read_excel(excel, sheet_name=sheetname, index_col=0)
-    labels = df.index.to_list()
     ar = df.to_numpy()
     i = 0
     while i <= (len(ar)-1):
@@ -39,9 +38,9 @@ def generate_matrix(excel, sheetname, output_file_name, tolerance, df_flag=False
                     ar[j][i] = 1-r
         i += 1
     if df_flag:
-        return df
+        return pd.DataFrame(ar, index=df.index, columns=index.columns)
     else:
-        df.to_excel(output_file_name)
+        pd.DataFrame(ar, index=df.index, columns=df.columns).to_excel(output_file_name)
 
 #Takes a workbook, gets all the species, generates a random prob distro, then uses that to generate a species list and uses predict_community to predict the equilibrium. For testing, all probabilities are set to 1
 def generator_fxn(workbook, sheetname, n, pairwise_file):
@@ -89,7 +88,7 @@ def generator_fxn(workbook, sheetname, n, pairwise_file):
 def main(n=500):
     # CU = generator_fxn('PWMatrix.xlsx', 'Relative_Abundance', n, 'PWMatrix.xlsx')
     # CU.to_excel('GeneratorOutput/CU.xlsx')
-    generate_matrix('Sample1.xlsx', 'Sheet1', 'Sample1.xlsx', 0.03)
+    generate_matrix('Lam.xlsx', 'Sheet1', 'PWTest.xlsx', 0.03)
 
 if __name__=="__main__":
     main()

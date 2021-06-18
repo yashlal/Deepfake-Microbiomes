@@ -9,11 +9,9 @@ import matplotlib.pyplot as plt
 def odeSys(t,z,Lambda):
     term1 = np.dot(Lambda,z)
     term2 = np.dot(z.T,term1)
-    dzdt = z*(term1-term2)
-    return dzdt
+    return z*(term1-term2)
 
-#vectorize=true returns list of RA values at eq instead of dict
-def predict_community(FullLambdaMat, comm, verb=False, vectorize=False):
+def predict_community(FullLambdaMat, comm, verb=False):
 
     LambdaMat = SelectLambdas(comm, FullLambdaMat=FullLambdaMat)
 
@@ -44,17 +42,15 @@ def predict_community(FullLambdaMat, comm, verb=False, vectorize=False):
         t += [community.t]
         centered_differences = (Z[-1]-Z[-3])/(3*dt)
         deriv_estimate = np.sqrt(np.dot(centered_differences,centered_differences))
-    print(t[-1])
-    print(deriv_estimate)
+
     Z =  np.array(Z[2:])
     CommunityEquilibrium = dict([(LambdaMat.index[i],Z[-1][i]) for i in range(numComm)])
 
     if np.sum(list(CommunityEquilibrium.values())).round(3) != 1:
         print("Error: zi do not sum to 1", np.sum(list(CommunityEquilibrium.values())))
         CommunityEquilibrium = {}
+    elif np.min(list(CommunityEquilibrium.values())).round(3) < 0:
+        print("Error: exists zi<0", np.min(list(CommunityEquilibrium.values())).round(3))
+        CommunityEquilibrium = {}
 
-    #Rounding prevents small negative numbers like -8e-83 (they screw up the JS distance and make it inf)
-    if vectorize:
-        return [x.round(5) for x in list(CommunityEquilibrium.values())]
-    else:
-        return CommunityEquilibrium
+    return CommunityEquilibrium

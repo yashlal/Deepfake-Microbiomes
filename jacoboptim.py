@@ -1,82 +1,65 @@
-import pandas as pd
-import autograd.numpy as np
-import random as rd
-from generator import *
-from predict_by_model import predict_community
-from GenerateLambdas import *
 import autograd
+import autograd.numpy as anp
+import pandas as pd
+from modules import *
+from predict_by_model import *
+from GenerateLambdas import *
 from autograd.builtins import tuple
 from scipy.integrate import odeint as BlackBox
 import matplotlib.pyplot as plt
-from modules import *
-from scipy.spatial import distance
-from datetime import datetime
 
-dim1 = 280
-dim2 = 39060
+epoch = 1
+RADF = pd.read_excel('JacobTest.xlsx', index_col=0)
+LamMat = GenerateLambdasFromRADF(RADF)
+target_vector = anp.array(list((predict_community(LamMat, comm = RADF.index.tolist(), verb=True).values())))
 
-#system must be put into two functions because of incompatible input type weirdness
-def f1(y,t,Lambda):
-    mat = regenerate_PWMatrix(Lambda, dim1)
-    term1 = np.dot(mat, y)
-    return y*term1
+print(target_vector)
+def f(z, t, Lambda):
+    term1 = anp.dot(Lambda,z)
+    term2 = anp.dot(z,term1)
+    term3 = term1-term2
+    dzdt =  anp.multiply(z, term3)
+    return dzdt
 
-def f2(y,t,Lambda):
-    mat = regenerate_PWMatrix(Lambda, dim1)
-    term2 = -np.dot(y.T, np.dot(mat, y))
-    return y*term2
+J = autograd.jacobian(f, argnum=0)
+grad_f_theta = autograd.jacobian(f, argnum=2)
+sensitivity = anp.zeros((3,3,3))
 
-#Jacobians for two functions
-J1 = autograd.jacobian(f1, argnum=0)
-J2 = autograd.jacobian(f2, argnum=0)
+def odeSys(z, t, Lambda):
+    global sensitivity
+    global epoch
+    dzdt = f(z,t,Lambda)
+    sensitivity += J(z,t,Lambda)@sensitivity + grad_f_theta(z,t,Lambda)
+    # if epoch >= 320:
+    #     print(J(z,t,Lambda))
+    #     print(sensitivity)
+    #     print(grad_f_theta(z,t,Lambda))
+    return dzdt
 
-#gfl means gradient wrt Lambda
-gfl1 = autograd.jacobian(f1, argnum=2)
-gfl2 = autograd.jacobian(f2, argnum=2)
+cost = JSD
+C_grad = autograd.grad(cost)
 
-def ODESYS(Y, t, Lambda):
+init_z = (anp.ones(3)/3)
+init_lam = anp.array([[0, 1, 1], [6, 0, 1], [3.5, 1.1, 0]])
+time = np.linspace(0,50,500)
 
-    sensitivity_matrix = np.reshape(Y[-dim1*dim2:], (dim1, dim2))
-    dydt = f1(Y[0:dim1], t, Lambda)+f2(Y[0:dim1], t, Lambda)
-    #this line resolves the aforementioned "input type weirdness"
-    Jac1 = [[j._value for j in i] for i in J1(Y[0:dim1], t, Lambda)]
-    Jac = Jac1 + J2(Y[0:dim1], t, Lambda)
-    GFL = gfl1(Y[0:dim1], t, Lambda)+gfl2(Y[0:dim1], t, Lambda)
-    GYL = (Jac@sensitivity_matrix + GFL)
-    #flatten
-    GYL = np.reshape(GYL, (dim1*dim2,))
-    return np.concatenate([dydt, GYL])
 
-#COST = modules.JSD
+loss_values = []
+while epoch<=1000:
+    sol = BlackBox(odeSys, y0 = init_z, t = time, args = tuple([init_lam]))
+    comm = anp.array([x.round(7) for x in sol[-1]])
+    dist_grad = C_grad(comm, target_vector)
+    step = sensitivity@dist_grad
+    dist = cost(comm, target_vector)
+    loss_values.append(dist)
+    print('Epoch Number ' + str(epoch) + ':' + str(dist))
+    print(comm)
 
-#Setting up
-target = (pd.read_excel('XData.xlsx').iloc[0,1:]).to_list()
-target_vector = np.array([x for x in target if x!=0]).astype('float')
-df1 = pd.read_excel('Sample1.xlsx', index_col=0)
-init_lambda = GenerateLambdasFromRADF(df1).to_numpy()
+    init_lam -= step
 
-init_y = ((np.ones(dim1))/dim1).astype('float')
-init_grad = np.zeros((dim2*dim1,))
-Y0 = np.concatenate([init_y, init_grad])
+    sensitivity = anp.zeros((3,3,3))
 
-time = np.linspace(0, 50, num=500)
+    epoch += 1
 
-grad_C = autograd.grad(JSD)
-
-maxiter = 100
-learning_rate = 1 #Big steps
-for i in range(maxiter):
-    print(i, datetime.now().time())
-    sol = BlackBox(ODESYS, y0 = Y0, t = time, args = tuple([init_lambda]))
-
-    Y = sol[-1, :dim1]
-
-    print(JSD(Y, target_vector), datetime.now().time())
-
-    matr = np.reshape(sol[-1, -dim2*dim1:], ((dim1, dim2)))
-    grad = ((grad_C(Y, target_vector)[:,None].T)@matr)[0]
-    init_lambda = np.array([init_lambda[i] - grad[i] for i in len(range(grad))])
-
-final_lambda = regenerate_PWMatrix(init_lambda, dim1)
-df2 = pd.DataFrame(final_lambda, index = df1.index.tolist(), columns = df1.index.tolist())
-df2.to_excel('Final.xlsx')
+plt.plot(loss_values)
+plt.show()

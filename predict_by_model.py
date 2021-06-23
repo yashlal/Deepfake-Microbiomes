@@ -9,7 +9,9 @@ import matplotlib.pyplot as plt
 def odeSys(t,z,Lambda):
     term1 = np.dot(Lambda,z)
     term2 = np.dot(z.T,term1)
-    return z*(term1-term2)
+    term3 = term1-term2
+    dzdt =  np.multiply(z, term3)
+    return dzdt
 
 def predict_community(FullLambdaMat, comm, verb=False):
 

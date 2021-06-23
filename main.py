@@ -21,7 +21,7 @@ def genLam():
                 arr[i][j] = 1
     cr.to_excel('Lam.xlsx')
 
-def main():
+def main(epoch_number):
     Lam = pd.read_excel('LamTest.xlsx', index_col=0)
     # com = predict_community(Lam, comm=Lam.index.to_list(), verb=True, vectorize=True)
 
@@ -36,7 +36,7 @@ def main():
         prob_distro[samples.columns[i]] = np.count_nonzero(l) / l.shape[0]
 
     epoch = 1
-    while epoch <= 100:
+    while epoch <= epoch_number:
         print(epoch)
         AllCommunityEquilibrium[epoch] = {}
         spec_list = []
@@ -50,9 +50,11 @@ def main():
         if comm=={}:
             continue
         for key,val in comm.items():
-            AllCommunityEquilibrium[epoch][key] = val.round(3)
+            AllCommunityEquilibrium[epoch][key] = val.round(7)
         spec_list.clear()
         epoch += 1
 
     df_output = pd.DataFrame(AllCommunityEquilibrium).transpose()[ordering]
     df_output.to_excel('GeneratorOutput/CU.xlsx')
+
+main(5000)

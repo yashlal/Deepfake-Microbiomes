@@ -14,8 +14,9 @@ dim1 = 3
 dim2 = 27
 RADF = pd.read_excel('JacobTest.xlsx', index_col=0)
 LamMat = GenerateLambdasFromRADF(RADF)
-target_vector = anp.array(list((predict_community(LamMat, comm = RADF.index.tolist(), verb=True).values())))
-print(target_vector)
+lam_vec = anp.array(LamMat.values.tolist())
+# target_vector = anp.array(list((predict_community(LamMat, comm = RADF.index.tolist(), verb=True).values())))
+# print(target_vector)
 
 def f(z, t, Lambda):
     term1 = anp.dot(Lambda,z)
@@ -34,8 +35,17 @@ def odeSys(z, t, Lambda):
     sensitivity = J(z_spec,t,Lambda)@sensitivity + grad_f_theta(z_spec,t,Lambda)
     return anp.concatenate([dzdt, anp.reshape(sensitivity, (dim2,))])
 
-cost = JSD
-C_grad = autograd.grad(cost)
+def Cost(y_obs):
+    def cost(Y):
+        '''Squared Error Loss'''
+        n = y_obs.shape[0]
+        er=0
+        for i in range(n):
+            er = er + JSD(Y[i], y_obs[i])
+
+        return er/n
+
+    return cost
 
 init_z = (anp.ones(3)/3)
 init_sens = anp.zeros(27)
@@ -46,24 +56,33 @@ Z0 = anp.concatenate([init_z, init_sens])
 loss_values = []
 learning_rate = 1
 
+true_sol = BlackBox(odeSys, y0 = Z0, t = time, args = tuple([lam_vec]))
+target = true_sol[:, :3]
+cost = Cost(target)
+C_grad = autograd.grad(cost)
 
-while epoch<=1000:
+# sol = BlackBox(odeSys, y0 = Z0, t = time, args = tuple([init_lam]))
+# comm = sol[:, :3]
+# print(anp.nan_to_num(C_grad(comm)))
+
+learning_rate = 0.1
+while epoch<=10000:
     sol = BlackBox(odeSys, y0 = Z0, t = time, args = tuple([init_lam]))
-    comm = anp.array([x.round(7) for x in sol[-1][0:3]])
-    sensitivity = anp.reshape(sol[-1][-27:], (3,3,3))
+    comm = sol[:, :3]
+    sensitivity = anp.array([anp.reshape(x, (3,3,3)) for x in sol[:, -27:]])
 
-    dist_grad = C_grad(comm, target_vector)
-    step = sensitivity@dist_grad
-
-    dist = cost(comm, target_vector)
-    loss_values.append(dist)
+    dist = cost(comm)
+    costgrad = anp.nan_to_num(C_grad(comm))
     print('Epoch Number ' + str(epoch) + ':' + str(dist))
-    # print(comm)
+    loss_values.append(dist)
+    step = []
+    for i in range(sensitivity.shape[0]):
+        step.append(sensitivity[i]@costgrad[i])
+    step = anp.array(step).sum(0)
 
     init_lam -= learning_rate*step
 
     epoch += 1
 
-# plt.plot(loss_values)
 plt.plot(loss_values)
 plt.show()

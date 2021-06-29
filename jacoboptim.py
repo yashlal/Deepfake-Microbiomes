@@ -15,8 +15,8 @@ dim2 = 27
 RADF = pd.read_excel('JacobTest.xlsx', index_col=0)
 LamMat = GenerateLambdasFromRADF(RADF)
 lam_vec = anp.array(LamMat.values.tolist())
-# target_vector = anp.array(list((predict_community(LamMat, comm = RADF.index.tolist(), verb=True).values())))
-# print(target_vector)
+target_vector = anp.array(list((predict_community(LamMat, comm = RADF.index.tolist(), verb=True).values())))
+print(target_vector)
 
 def f(z, t, Lambda):
     term1 = anp.dot(Lambda,z)
@@ -65,8 +65,8 @@ C_grad = autograd.grad(cost)
 # comm = sol[:, :3]
 # print(anp.nan_to_num(C_grad(comm)))
 
-learning_rate = 0.1
-while epoch<=10000:
+learning_rate = 100
+while epoch<=1000:
     sol = BlackBox(odeSys, y0 = Z0, t = time, args = tuple([init_lam]))
     comm = sol[:, :3]
     sensitivity = anp.array([anp.reshape(x, (3,3,3)) for x in sol[:, -27:]])
@@ -74,6 +74,7 @@ while epoch<=10000:
     dist = cost(comm)
     costgrad = anp.nan_to_num(C_grad(comm))
     print('Epoch Number ' + str(epoch) + ':' + str(dist))
+    print(comm[-1])
     loss_values.append(dist)
     step = []
     for i in range(sensitivity.shape[0]):

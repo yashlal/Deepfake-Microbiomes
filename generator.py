@@ -2,9 +2,6 @@ import pandas as pd
 import numpy as np
 from predict_by_model import *
 import random as rd
-import cProfile
-from torch import nn, optim
-import torch.nn.functional as F
 
 # Generates a random value in a Bernoulli style, used to determine whether or not a species will be included in the list
 def genrand(p):

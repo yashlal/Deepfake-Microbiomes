@@ -6,6 +6,7 @@ import numpy as np
 import torch.optim as optim
 import time
 from math import sqrt
+from rich.console import Console; c = Console()
 
 # select CUDA if available
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -37,34 +38,34 @@ net = MyNet().to(device)
 
 # for n in range(1,151):
 #     PATH = 'Data/Train1-150/' + str(n)
-f = open('Data/Train1/1', 'rb')
+f = open('Data/Train1-150/1', 'rb')
 data = pickle.load(f)
 
 criterion = nn.MSELoss(reduction='mean')
 optimizer = optim.Adam(net.parameters(), lr=1e-4)
 
+with c.status('Training...'):
+    for i in range(1000):
+        optimizer.zero_grad()
+        start = time.time()
 
-for i in range(1000):
-    optimizer.zero_grad()
-    start = time.time()
+        t1=time.time()
+        input = torch.from_numpy(data[i][1]).float().to(device)
+        true_y = torch.FloatTensor(data[i][0]).to(device)
 
-    t1=time.time()
-    input = torch.from_numpy(data[i][1]).float().to(device)
-    true_y = torch.FloatTensor(data[i][0]).to(device)
+        t2=time.time()
+        output = net(input).to(device)
 
-    t2=time.time()
-    output = net(input).to(device)
+        t3=time.time()
+        loss = criterion(output, true_y).to(device)
 
-    t3=time.time()
-    loss = criterion(output, true_y).to(device)
+        t4=time.time()
+        loss.backward()
 
-    t4=time.time()
-    loss.backward()
+        t5=time.time()
+        optimizer.step()
 
-    t5=time.time()
-    optimizer.step()
-
-    print(f'Epoch {i}: {sqrt(loss.item())}')
+        print(f'Epoch {i}: {sqrt(loss.item())}')
 
 # PATH = 'model.pth'
 # torch.save(net.state_dict(), PATH)

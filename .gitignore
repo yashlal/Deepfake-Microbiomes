@@ -1,4 +1,3 @@
-*.txt
 playground.py
 /__pycache__
 playground.xlsx
@@ -7,3 +6,4 @@ bugfixes.py
 /playground
 /Data
 playground2.py
+*.txt

@@ -1,13 +1,12 @@
 import numpy as np
+import pandas as pd
 from scipy.integrate import ode
-import matplotlib.pyplot as plt
 import json
 from scipy.integrate import odeint
-import matplotlib.pyplot as plt
 from numba import njit
 import time
 
-@njit
+@njit()
 def odeSys(t, zeta, Lambda):
     z = np.exp(zeta)
     term1 = np.dot(Lambda,z)
@@ -20,6 +19,7 @@ def wrapper(LambdaMat):
 
 def predict_community_fullnp(LambdaMat, comm, verb=False):
 
+    #this wrapper allows NJIT with odesys
     f = wrapper(LambdaMat)
 
     numComm = len(comm)
@@ -50,21 +50,21 @@ def predict_community_fullnp(LambdaMat, comm, verb=False):
 
     if np.sum(cm).round(3) != 1:
         print("Error: zi do not sum to 1", np.sum(cm))
-        print(cm)
-        df = pd.DataFrame(Z, columns=comm)
-        df.to_excel('ZProblem.xlsx')
-        df2 = pd.DataFrame(LambdaMat, index=comm, columns=comm)
-        df2.to_excel('LamProblem.xlsx')
-        cm = []
+        # print(cm)
+        # df = pd.DataFrame(Z, columns=comm)
+        # df.to_excel('ZProblem.xlsx')
+        # df2 = pd.DataFrame(LambdaMat, index=comm, columns=comm)
+        # df2.to_excel('LamProblem.xlsx')
+        cm = np.array([])
         return cm
     elif np.min(cm).round(3) < 0:
         print("Error: exists zi<0", np.min(cm).round(3))
-        print(cm)
-        df = pd.DataFrame(Z, columns=comm)
-        df.to_excel('ZProblem.xlsx')
-        df2 = pd.DataFrame(LambdaMat, index=comm, columns=comm)
-        df2.to_excel('LamProblem.xlsx')
-        cm = []
+        # print(cm)
+        # df = pd.DataFrame(Z, columns=comm)
+        # df.to_excel('ZProblem.xlsx')
+        # df2 = pd.DataFrame(LambdaMat, index=comm, columns=comm)
+        # df2.to_excel('LamProblem.xlsx')
+        cm = np.array([])
         return cm
 
-    return cm.tolist()
+    return cm

@@ -1,0 +1,12 @@
+torch>=1.9.0
+rich
+pickle
+numpy
+time
+pandas
+random
+scipy
+autograd
+numba
+sklearn
+matplotlib

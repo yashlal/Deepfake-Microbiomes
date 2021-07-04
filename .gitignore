@@ -7,3 +7,6 @@ bugfixes.py
 /Data
 playground2.py
 *.txt
+!requirements.txt
+venv
+.idea

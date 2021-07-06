@@ -70,12 +70,7 @@ class MyNet(nn.Module):
         self.fc2 = nn.Linear(462*5, 231*461)
     def forward(self,x):
         x = F.relu(self.fc1(x))
-        x = self.dropout(x)
-        x = F.relu(self.fc2(x))
-        x = self.dropout(x)
-       	x = F.relu(self.fc3(x))
-        x = self.dropout(x)
-        x = self.fc4(x)
+        x = self.fc2(x)
         return x
 
 net = MyNet().to(device)
@@ -84,7 +79,7 @@ optimizer = optim.Adam(net.parameters(), lr=1e-4)
 
 loss_v = []
 
-for i in range(1000):
+for i in range(10000):
     optimizer.zero_grad()
     x, y = datagen()
     input = torch.from_numpy(x).float().to(device)
@@ -98,12 +93,24 @@ for i in range(1000):
 
     optimizer.step()
 
-    print(f'File {n}: Epoch {i}: {sqrt(loss.item())}')
+    print(f'Epoch {i}: {sqrt(loss.item())}')
+
+for i in range(100):
+  print(f'Test Epoch {i}')
+  test_loss = 0
+  x, y = datagen()
+  test_x = torch.from_numpy(x).float().to(device)
+  test_y = torch.FloatTensor(y).to(device)
+
+  output = net(input).to(device)
+
+  loss = criterion(output, true_y).to(device)
+  test_loss += sqrt(loss.item())
+  print(f'Average Test RMS: {test_loss/100}')
 
 PATH = 'model.pth'
 torch.save(net.state_dict(), PATH)
 
 plt.plot(loss_v)
-img_path = f'Loss{f_min}to{f_max}'
 plt.savefig('Loss.png')
 plt.show()

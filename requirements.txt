@@ -10,3 +10,5 @@ autograd
 numba
 sklearn
 matplotlib
+numba
+csv

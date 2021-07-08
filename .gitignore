@@ -8,5 +8,6 @@ bugfixes.py
 playground2.py
 *.txt
 !requirements.txt
+!output.txt
 venv
 .idea

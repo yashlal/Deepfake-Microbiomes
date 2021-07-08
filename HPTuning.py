@@ -131,10 +131,12 @@ def testconfig(model):
 pbar4=tqdm(range(1530, 4630, 10))
 pbar4.set_description('HP Tuning Progress')
 
-with open('output.csv', 'a+', newline='') as f:
+with open('output.csv', 'a+', newline='') as f: # a+ CREATES IF NOT EXISTS
   for it in pbar4:
     hyperparam = it
     net = MyNet(hyperparam).to(device)
+
+    # MULTI-GPU CONFIGURATION
     if torch.cuda.device_count() > 1:
         print(f'Using {torch.cuda.device_count()} GPUs')
         net = nn.DataParallel(net)
@@ -148,5 +150,7 @@ with open('output.csv', 'a+', newline='') as f:
     acc = testconfig(net)
     print(f'Hidden Layer n={it}')
     print(f'Test Acc: {acc}')
+    
+    # WRITE AS CSV
     writer = csv.writer(f)
     writer.writerow([it, acc])

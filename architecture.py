@@ -55,7 +55,9 @@ def generate_train_set(n):
     full_m = pd.DataFrame(generate_matrix(trimmed_specs), index=trimmed_specs, columns=trimmed_specs)
     train_y = get_LT(full_m.to_numpy())
 
-    for epoch in range(n):
+    pbar2=tqdm(range(n))
+    pbar2.set_description('Generating Train Data')
+    for epoch in pbar2:
 
         npcm = np.zeros(len(trimmed_specs))
         size = rd.randint(25, 235)
@@ -90,11 +92,11 @@ class MyNet(nn.Module):
         return x
 
 def train_net(model, train_size):
-    pbar3=tqdm(range(train_size))
-    pbar3.set_description('Training Neural Net')
+    pbar2=tqdm(range(train_size))
+    pbar2.set_description('Training Neural Net')
     train_x, train_y = generate_train_set(n=train_size)
 
-    for i in pbar3:
+    for i in pbar2:
         optimizer.zero_grad()
         x, y = train_x[i], train_y
         input = torch.from_numpy(x).float().to(device)

@@ -52,7 +52,7 @@ def generate_matrix(comm):
 
 def generate_train_set(n):
     train_x = []
-    full_m = pd.DataFrame(generate_matrix(trimmed_specs), index=trimmed_specs, columns=trimmed_specs)
+    full_m = pd.DataFrame(generate_matrix(typed_trimmed_specs), index=trimmed_specs, columns=trimmed_specs)
     train_y = get_LT(full_m.to_numpy())
 
     pbar2=tqdm(range(n))
@@ -80,7 +80,6 @@ if str(device) == 'cuda:0':
 elif str(device) == 'cpu':
 	print('CUDA device not available. CPU selected')
 
-
 class MyNet(nn.Module):
     def __init__(self, hyperparam):
         super(MyNet, self).__init__()
@@ -92,6 +91,7 @@ class MyNet(nn.Module):
         return x
 
 def train_net(model, train_size):
+    loss_values = []
     pbar2=tqdm(range(train_size))
     pbar2.set_description('Training Neural Net')
     train_x, train_y = generate_train_set(n=train_size)
@@ -104,13 +104,30 @@ def train_net(model, train_size):
         output = model(input).to(device)
         loss = criterion(output, true_y).to(device)
         s = sqrt(loss.item()/(231*461))
-        print(f'Epoch {i}: Loss {s}')
+        if (i % 10)==0:
+          print(f'Epoch {i}: Loss {s}')
+        loss_values.append(s)
         loss.backward()
         optimizer.step()
+    return loss_values, train_y
+
+def test_net(model, Lambda_Mat):
+    full_cm = predict_community_fullnp(trimmed_specs, Lambda_Mat)
+    input = torch.from_numpy(full_cm).float().to(device)
+    Lambda_Mat_pred = model(input)
+
+    loss1 = criterion(Lambda_Mat_pred, Lambda_Mat).to(device)
+    s = sqrt(loss.item()/(231*461))
+    cm_pred = predict_community_fullnp(trimmed_specs, Lambda_Mat_pred)
+    loss2 = WD(full_cm, cm_pred)
+    print(s)
+    print(loss2)
+    print(full_cm)
+    print(cm_pred)
 
 if __name__=='__main__':
-
-    train_size, test_size, param = 5000, 25, 500
+    train_size, test_size, param = 3000, 25, 4000
+    path = 'model.pth'
 
     net = MyNet(param).to(device)
 
@@ -123,4 +140,10 @@ if __name__=='__main__':
 
     criterion = nn.MSELoss(reduction='sum')
     optimizer = optim.Adam(net.parameters(), lr=1e-4)
-    train_net(net, train_size=train_size)
+    lv, full_lam = train_net(net, train_size=train_size)
+    test_net(net, full_lam)
+    
+    torch.save(net.state_dict(), path)
+    plt.plot(lv)
+    plt.savefig('Loss')
+    plt.show()

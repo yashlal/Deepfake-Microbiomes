@@ -14,7 +14,6 @@ import time
 from math import sqrt
 import matplotlib.pyplot as plt
 from tqdm.auto import tqdm
-from modules import regenerate_PWMatrix
 from scipy.stats import wasserstein_distance as WD
 
 data = pd.read_excel('RealData.xlsx', index_col=0)

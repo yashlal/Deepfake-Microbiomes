@@ -45,3 +45,10 @@ def regenerate_PWMatrix(LT_arr, dim):
                 output_ar[-1].append(1-LT_arr[v])
 
     return output_ar
+    
+def genrand(p):
+    v = rd.random()
+    if v <= p:
+        return 1
+    else:
+        return 0

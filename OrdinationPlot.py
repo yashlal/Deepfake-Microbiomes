@@ -146,7 +146,7 @@ if __name__=='__main__':
     optimizer = optim.Adam(net.parameters(), lr=1e-4)
     lv, full_lam = train_net(net, train_size=train_size)
     full_lam = np.array(regenerate_PWMatrix(full_lam, 462))
-    test_net(net, test_size=test_size, full_lam, prob_distro=prob_distro)
+    test_net(model=net, test_size=test_size, Lambda_Mat=full_lam, prob_distro=prob_distro)
     torch.save(net.state_dict(), path)
     plt.plot(lv)
     plt.savefig('Loss')

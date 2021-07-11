@@ -26,7 +26,7 @@ prob_distro = {}
 for i in range(len(specs)):
     if data.iloc[:,i].astype(bool).sum() >= 85:
         trimmed_specs.append(specs[i])
-        prob_distro[specs[i]] = data.iloc[:,i].astype(bool).sum() / (462)
+        prob_distro[specs[i]] = data.iloc[:,i].astype(bool).sum() / (849)
         typed_trimmed_specs.append(specs[i])
 
 @njit()

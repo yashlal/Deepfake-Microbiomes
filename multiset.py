@@ -14,7 +14,7 @@ import time
 from math import sqrt
 import matplotlib.pyplot as plt
 from tqdm.auto import tqdm
-from modules import regenerate_PWMatrix
+from modules import *
 from scipy.stats import wasserstein_distance as WD
 
 data = pd.read_excel('RealData.xlsx', index_col=0)
@@ -26,30 +26,6 @@ for i in range(len(specs)):
     if data.iloc[:,i].astype(bool).sum() >= 85:
         trimmed_specs.append(specs[i])
         typed_trimmed_specs.append(specs[i])
-
-@njit()
-def get_LT(full_ar):
-    ar = []
-    for i in range(len(full_ar)):
-        for j in range(i):
-            ar.append(full_ar[i][j])
-    return ar
-
-@njit()
-def generate_matrix(comm):
-    dim = len(comm)
-    ar = np.zeros((dim,dim))
-
-    for i in range(dim):
-        for j in range(i+1):
-            if i == j:
-                ar[i][j] = 0
-            else:
-                r = rd.random()
-                ar[i][j] = r
-                ar[j][i] = 1-r
-
-    return ar
 
 # select CUDA if available
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")

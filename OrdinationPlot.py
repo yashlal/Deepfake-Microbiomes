@@ -14,7 +14,7 @@ import time
 from math import sqrt
 import matplotlib.pyplot as plt
 from tqdm.auto import tqdm
-from modules import regenerate_PWMatrix, genrand
+from modules import *
 from scipy.stats import wasserstein_distance as WD
 from sklearn.decomposition import PCA
 import seaborn as sns
@@ -32,30 +32,6 @@ for i in range(len(specs)):
         trimmed_specs.append(specs[i])
         prob_distro[specs[i]] = data.iloc[:,i].astype(bool).sum() / (849)
         typed_trimmed_specs.append(specs[i])
-
-@njit()
-def get_LT(full_ar):
-    ar = []
-    for i in range(len(full_ar)):
-        for j in range(i):
-            ar.append(full_ar[i][j])
-    return ar
-
-@njit()
-def generate_matrix(comm):
-    dim = len(comm)
-    ar = np.zeros((dim,dim))
-
-    for i in range(dim):
-        for j in range(i+1):
-            if i == j:
-                ar[i][j] = 0
-            else:
-                r = rd.random()
-                ar[i][j] = r
-                ar[j][i] = 1-r
-
-    return ar
 
 # select CUDA if available
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")

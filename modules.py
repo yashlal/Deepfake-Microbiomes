@@ -2,6 +2,8 @@ import pandas as pd
 from scipy.spatial import distance
 import numpy as np
 import random as rd
+from numba import njit
+from newsolver import predict_community_fullnp
 
 def JSD(p,q):
     m = np.add(p,q)/2
@@ -21,13 +23,6 @@ def JSD(p,q):
     dist = 0.5*(left_entr+right_entr)
     return dist**0.5
 
-def get_LT(df):
-    LT_ar = []
-    for i in range(df.shape[0]):
-        for j in range(i):
-            LT_ar.append(df.iloc[i,j])
-    return LT_ar
-
 def regenerate_PWMatrix(LT_arr, dim):
     output_ar = []
 
@@ -45,10 +40,39 @@ def regenerate_PWMatrix(LT_arr, dim):
                 output_ar[-1].append(1-LT_arr[v])
 
     return output_ar
-    
+
 def genrand(p):
     v = rd.random()
     if v <= p:
         return 1
     else:
         return 0
+
+@njit()
+def get_LT(full_ar):
+    ar = []
+    for i in range(len(full_ar)):
+        for j in range(i):
+            ar.append(full_ar[i][j])
+    return ar
+
+@njit()
+def generate_matrix(comm):
+    dim = len(comm)
+    ar = np.zeros((dim,dim))
+
+    for i in range(dim):
+        for j in range(i+1):
+            if i == j:
+                ar[i][j] = 0
+            else:
+                r = rd.random()
+                ar[i][j] = r
+                ar[j][i] = 1-r
+
+    return ar
+
+def datagen():
+    lm = generate_matrix(typed_trimmed_specs, 0)
+    cm = predict_community_fullnp(lm, trimmed_specs, verb=False)
+    return (cm, get_LT(lm))

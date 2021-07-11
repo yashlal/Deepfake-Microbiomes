@@ -16,6 +16,7 @@ import time
 from math import sqrt
 import matplotlib.pyplot as plt
 from tqdm import tqdm
+from modules import *
 
 train_size, test_size = 3000, 50
 
@@ -30,36 +31,6 @@ dim1 = len(trimmed_specs)
 
 typed_trimmed_specs = List()
 [typed_trimmed_specs.append(x) for x in trimmed_specs]
-
-@njit()
-def get_LT(full_ar):
-    ar = []
-    for i in range(len(full_ar)):
-        for j in range(i):
-            ar.append(full_ar[i][j])
-    return ar
-
-@njit()
-def generate_matrix(comm, tolerance):
-    dim = len(comm)
-    ar = np.zeros((dim,dim))
-
-    for i in range(dim):
-        for j in range(i+1):
-            if i == j:
-                ar[i][j] = 0
-            else:
-                r = rd.random()
-                # m = mult[i*dim1+j]
-                ar[i][j] = r
-                ar[j][i] = (1-r)
-
-    return ar
-
-def datagen():
-    lm = generate_matrix(typed_trimmed_specs, 0)
-    cm = predict_community_fullnp(lm, trimmed_specs, verb=False)
-    return (cm, get_LT(lm))
 
 # select CUDA if available
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -150,7 +121,7 @@ with open('output.csv', 'a+', newline='') as f: # a+ CREATES IF NOT EXISTS
     acc = testconfig(net)
     print(f'Hidden Layer n={it}')
     print(f'Test Acc: {acc}')
-    
+
     # WRITE AS CSV
     writer = csv.writer(f)
     writer.writerow([it, acc])

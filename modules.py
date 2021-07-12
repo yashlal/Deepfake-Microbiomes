@@ -71,8 +71,3 @@ def generate_matrix(comm):
                 ar[j][i] = 1-r
 
     return ar
-
-def datagen():
-    lm = generate_matrix(typed_trimmed_specs, 0)
-    cm = predict_community_fullnp(lm, trimmed_specs, verb=False)
-    return (cm, get_LT(lm))

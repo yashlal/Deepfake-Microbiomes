@@ -32,6 +32,11 @@ dim1 = len(trimmed_specs)
 typed_trimmed_specs = List()
 [typed_trimmed_specs.append(x) for x in trimmed_specs]
 
+def datagen():
+    lm = generate_matrix(typed_trimmed_specs)
+    cm = predict_community_fullnp(lm, trimmed_specs, verb=False)
+    return (cm, get_LT(lm))
+
 # select CUDA if available
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 if str(device) == 'cuda:0':

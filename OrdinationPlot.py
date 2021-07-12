@@ -146,7 +146,7 @@ if __name__=='__main__':
     lv, full_lam = train_net(net, train_size=train_size)
     full_lam = pd.DataFrame(np.array(regenerate_PWMatrix(full_lam, 462)), index=trimmed_specs, columns=trimmed_specs)
     transformed_data, labels = test_net(model=net, test_size=test_size, Lambda_Mat=full_lam, prob_distro=prob_distro)
-    df = pd.DataFrame(tranformed_data, columns=['PCA1', 'PCA2'])
+    df = pd.DataFrame(transformed_data, columns=['PCA1', 'PCA2'])
     torch.save(net.state_dict(), path)
 
     ax0 = sns.scatterplot(data=df, x='PCA1', y='PCA2', hue=labels)

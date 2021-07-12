@@ -53,11 +53,11 @@ def train_net(model, train_size, super_train_size):
     loss_values = []
     pbar2=tqdm(range(super_train_size))
     pbar2.set_description(f'Training Neural Net on {super_train_size} SuperEpochs')
-    for super_epoch in range(super_train_size):
+    for super_epoch in pbar2:
       full_m = pd.DataFrame(generate_matrix(typed_trimmed_specs), index=trimmed_specs, columns=trimmed_specs)
       train_y = get_LT(full_m.to_numpy())
 
-      for epoch in pbar2:
+      for epoch in range(train_size):
 
           npcm = np.zeros(len(trimmed_specs))
           size = rd.randint(25, 235)
@@ -89,7 +89,7 @@ def train_net(model, train_size, super_train_size):
     return loss_values
 
 if __name__=='__main__':
-    super_train_size, train_size, test_size, param, = 300, 3000, 25, 2500
+    super_train_size, train_size, test_size, param, = 10, 3000, 25, 2500
     path = 'model.pth'
 
     net = MyNet(param).to(device)

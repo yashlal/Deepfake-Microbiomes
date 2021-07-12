@@ -34,11 +34,6 @@ if str(device) == 'cuda:0':
 elif str(device) == 'cpu':
 	print('CUDA device not available. CPU selected')
 
-def datagen():
-    lm = generate_matrix(typed_trimmed_specs)
-    cm = predict_community_fullnp(lm, trimmed_specs, verb=False)
-    return (cm, get_LT(lm))
-
 class MyNet(nn.Module):
     def __init__(self, hyperparam):
         super(MyNet, self).__init__()

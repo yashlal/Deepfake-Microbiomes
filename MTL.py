@@ -44,13 +44,46 @@ class MyNet(nn.Module):
         x = self.fc2(x)
         return x
 
-def train_net(model, train_size):
+def train_net(model, train_size, n_branches):
     true_outputs = []
-    for i in range(3):
-        true_outputs.append(datagen[1])
+    loss_values = []
+    for i in range(n_branches):
+        true_outputs.append(generate_matrix(typed_trimmed_specs))
+    pbar=tqdm(range(train_size))
+    pbar.set_description('Training Neural Net with 3 Branches')
+    for epoch in pbar:
+        total_loss = 0
+        s = 0
+        optimizer.zero_grad()
+        loss_values.append([])
+        for branch in range(n_branches):
+            full_m = pd.DataFrame(true_outputs[branch], index=trimmed_specs, columns=trimmed_specs)
+            npcm = np.zeros(len(trimmed_specs))
+            size = rd.randint(25, 235)
+            subset = rd.sample(trimmed_specs, size)
+            subset_lam = (full_m.loc[subset, subset]).to_numpy()
+            cm = predict_community_fullnp(subset_lam, subset, verb=False)
+            for j in range(len(cm)):
+                npcm[trimmed_specs.index(subset[j])] = cm[j]
+
+            input = torch.from_numpy(npcm).float().to(device)
+            true_y = torch.FloatTensor(get_LT(true_outputs[branch])).to(device)
+            output = model(input).to(device)
+            loss = criterion(output, true_y).to(device)
+            loss_values[-1].append(loss.item())
+            total_loss += loss
+            s += sqrt(loss.item()/(231*461))
+
+        s = (s / n_branches)
+        print(f'Epoch {epoch}: Loss {s}')
+        total_loss.backward()
+        optimizer.step()
+
+    return loss_values
+
 
 if __name__=='__main__':
-    train_size, test_size, param, = 3000, 25, 2500
+    train_size, test_size, param, n_branches = 15000, 25, 2500, 1
     path = 'model.pth'
 
     net = MyNet(param).to(device)
@@ -65,7 +98,7 @@ if __name__=='__main__':
     criterion = nn.MSELoss(reduction='sum')
     optimizer = optim.Adam(net.parameters(), lr=1e-4)
 
-    lv = train_net(net, train_size=train_size, super_train_size=super_train_size)
+    lv = train_net(net, train_size=train_size, n_branches=n_branches)
 
     plt.plot(lv)
     plt.savefig('Loss')

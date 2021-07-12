@@ -33,6 +33,11 @@ for i in range(len(specs)):
         prob_distro[specs[i]] = data.iloc[:,i].astype(bool).sum() / (849)
         typed_trimmed_specs.append(specs[i])
 
+def datagen():
+    lm = generate_matrix(typed_trimmed_specs)
+    cm = predict_community_fullnp(lm, trimmed_specs, verb=False)
+    return (cm, get_LT(lm))
+
 # select CUDA if available
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 if str(device) == 'cuda:0':

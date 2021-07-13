@@ -46,45 +46,50 @@ class MyNet(nn.Module):
 
 def train_net(model, train_size, super_train_size):
     loss_values = []
+    lengths = []
     pbar2=tqdm(range(super_train_size))
     pbar2.set_description(f'Training Neural Net on {super_train_size} SuperEpochs')
     for super_epoch in pbar2:
-      full_m = pd.DataFrame(generate_matrix(typed_trimmed_specs), index=trimmed_specs, columns=trimmed_specs)
-      train_y = get_LT(full_m.to_numpy())
+        full_m = pd.DataFrame(generate_matrix(typed_trimmed_specs), index=trimmed_specs, columns=trimmed_specs)
+        train_y = get_LT(full_m.to_numpy())
+        pbartrain=tqdm(range(train_size))
+        pbartrain.set_description(f'Training Neural Net on {train_size} Epochs')
+        for epoch in pbartrain:
+            y = pd.DataFrame(np.zeros((len(trimmed_specs), len(trimmed_specs))), index=trimmed_specs, columns=trimmed_specs)
+            # npcm = np.zeros(len(trimmed_specs))
+            size = rd.randint(5, 15)
+            # size = 2
+            subset = rd.sample(trimmed_specs, size)
+            subset_lam = (full_m.loc[subset, subset]).to_numpy()
+            y.loc[subset, subset] = subset_lam
+            cm = predict_community_fullnp(y.to_numpy(), trimmed_specs, verb=False)
 
-      for epoch in range(train_size):
-
-          npcm = np.zeros(len(trimmed_specs))
-          size = rd.randint(25, 235)
-          subset = rd.sample(trimmed_specs, size)
-          subset_lam = (full_m.loc[subset, subset]).to_numpy()
-          cm = predict_community_fullnp(subset_lam, subset, verb=False)
-
-          for i in range(len(cm)):
-              npcm[trimmed_specs.index(subset[i])] = cm[i]
+            # for i in range(len(cm)):
+            #   npcm[trimmed_specs.index(subset[i])] = cm[i]
 
 
-          optimizer.zero_grad()
+            optimizer.zero_grad()
 
-          x, y = npcm, train_y
+            x = cm
+            y = get_LT(y.to_numpy())
 
-          input = torch.from_numpy(x).float().to(device)
-          true_y = torch.FloatTensor(y).to(device)
-          output = model(input).to(device)
-          loss = criterion(output, true_y).to(device)
-          s = sqrt(loss.item()/(231*461))
-          if (epoch % 10)==0:
-            print(f'SuperEpoch {super_epoch}: Epoch {epoch}: Loss {s}')
-          loss_values.append(s)
-          loss.backward()
-          optimizer.step()
-          if s<=0.002:
-            break
+            input = torch.from_numpy(x).float().to(device)
+            true_y = torch.FloatTensor(y).to(device)
+            output = model(input).to(device)
+            loss = criterion(output, true_y).to(device)
+            s = sqrt(loss.item()/(231*461))
+            print(f'SuperEpoch {super_epoch}: Epoch {epoch}: Loss {s} (Subset Size {size})')
+            loss_values.append(s)
+            lengths.append(size)
+            loss.backward()
+            optimizer.step()
+            # if s<=0.002:
+            #     break
 
-    return loss_values
+    return loss_values, lengths
 
 if __name__=='__main__':
-    super_train_size, train_size, test_size, param, = 10, 3000, 25, 2500
+    super_train_size, train_size, test_size, param, = 1, 3000, 25, 2500
     path = 'model.pth'
 
     net = MyNet(param).to(device)
@@ -99,8 +104,11 @@ if __name__=='__main__':
     criterion = nn.MSELoss(reduction='sum')
     optimizer = optim.Adam(net.parameters(), lr=1e-4)
 
-    lv = train_net(net, train_size=train_size, super_train_size=super_train_size)
+    lv, lg = train_net(net, train_size=train_size, super_train_size=super_train_size)
 
     plt.plot(lv)
+    plt.xlabel('Epoch Number')
+    plt.ylabel('Loss')
+    plt.title('Loss over Time')
     plt.savefig('Loss')
     plt.show()

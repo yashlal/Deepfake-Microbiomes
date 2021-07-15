@@ -6,7 +6,6 @@ time
 pandas
 random
 scipy
-autograd
 numba
 sklearn
 matplotlib

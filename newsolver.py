@@ -46,7 +46,7 @@ def predict_community_fullnp(LambdaMat, comm, verb=False):
         #deriv_estimate = np.sqrt(np.dot(centered_differences,centered_differences))
 
 
-    cm = Z[-1]
+    cm = Z[2:]
 
     if np.sum(cm).round(3) != 1:
         print("Error: zi do not sum to 1", np.sum(cm))
@@ -57,6 +57,7 @@ def predict_community_fullnp(LambdaMat, comm, verb=False):
         # df2.to_excel('LamProblem.xlsx')
         cm = np.array([])
         return cm
+
     elif np.min(cm).round(3) < 0:
         print("Error: exists zi<0", np.min(cm).round(3))
         # print(cm)

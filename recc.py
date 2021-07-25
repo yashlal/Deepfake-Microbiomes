@@ -47,63 +47,46 @@ def datagen():
     return (cm, modules.get_LT(lm))
 
 class MyNet(nn.Module):
-    def __init__(self, hyperparam1, hyperparam2):
+    def __init__(self, hyperparam1):
         super(MyNet, self).__init__()
-        self.fc1 = nn.Linear(dim1, 3)
-        self.fc2 = nn.Linear(hyperparam1,  hyperparam2)
-        self.fc3 = nn.Linear(hyperparam2, dim2)
-        self.sigmoid = nn.Sigmoid()
+        self.fc1 = nn.Linear(6, hyperparam1)
+        self.fc2 = nn.Linear(hyperparam1, 6)
     def forward(self,x):
         x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
-        x = self.fc3(x)
-        return self.sigmoid(x)
+        x = self.fc2(x)
+        return x
 
 def train_net(model, train_size):
-    loss_values = []
+    lv = []
+    for traj in range(train_size):
+        traj, lams = datagen()
 
-    pbartrain=tqdm(range(train_size))
-    pbartrain.set_description(f'Training Neural Net on {train_size} Epochs')
-    for epoch in pbartrain:
+        for t in range(traj.shape[0]-1):
+            optimizer.zero_grad()
 
-        optimizer.zero_grad()
+            x_ = np.concatenate((traj[i], lams))
+            y_ = np.concatenate((traj[i+1], lams))
 
-        x, y = datagen()
+            input = torch.from_numpy(x_).float().to(device)
+            true_y = torch.from_numpy(y_).float().to(device)
 
-        input = torch.from_numpy(x).float().to(device)
-        true_y = torch.FloatTensor(y).to(device)
-        output = model(input).to(device)
-        if (epoch%100)==0:
-            print(output.detach().tolist(), y)
-        loss = criterion(output, true_y).to(device)
-        s = sqrt(loss.item()/(dim2))
-        print(f'Epoch {epoch}: Loss {s}')
-        loss_values.append(s)
-        loss.backward()
-        optimizer.step()
+            output = model(input).to(device)
+            loss = criterion(output, true_y).to(device)
+            lv.append(loss.detach().item())
 
+            loss.backward()
+            optimizer.step()
 
-    return loss_values
+            print(f'Trajectory {epoch}: Time {t+1}/{traj.shape[0]-1}: Loss is {lv[-1]}')
 
 def test_net(model, test_size):
-    s = 0
-    for epoch in range(test_size):
-        x, y = datagen()
-
-        input = torch.from_numpy(x).float().to(device)
-        true_y = torch.FloatTensor(y).to(device)
-        output = model(input).to(device)
-        pred_lam = np.array(modules.regenerate_PWMatrix(output.tolist(), dim1))
-        pred_cm = predict_community_fullnp(pred_lam, trimmed_specs, verb=False)
-        s += WD(pred_cm,x)
-        print(WD(pred_cm, x))
-    return s/test_size
+    pass
 
 if __name__=='__main__':
-    train_size, test_size, param1, param2 = 5000, 25, 3, 3
+    train_size, param1 = 3, 6
     path = 'model.pth'
 
-    net = MyNet(param1, param2).to(device)
+    net = MyNet(param1).to(device)
 
     #Multi GPU Support
     if torch.cuda.device_count() > 1:
@@ -112,11 +95,10 @@ if __name__=='__main__':
     elif torch.cuda.device_count() == 1:
         print(f'Using {torch.cuda.device_count()} GPU')
 
-    criterion = nn.MSELoss(reduction='sum')
+    criterion = nn.MSELoss()
     optimizer = optim.Adam(net.parameters(), lr=1e-4)
 
     lv = train_net(net, train_size=train_size)
-    test_perf = test_net(net, test_size)
 
     plt.plot(lv)
     plt.xlabel('Epoch Number')
@@ -124,5 +106,3 @@ if __name__=='__main__':
     plt.title(f'{len(trimmed_specs)} Species: Loss over Time')
     plt.savefig('3SpecLoss')
     plt.show()
-
-    print(test_perf)
